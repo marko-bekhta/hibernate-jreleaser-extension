@@ -1,0 +1,91 @@
+= Hibernate JReleaser extensions
+
+== Merging Maven's metadata xml for SNAPSHOT releases
+
+When staging artifacts to a local directory with your build tool, the generated `maven-metadata.xml` will only contain
+the version that you are currently building, e.g.:
+
+[source,XML]
+----
+<?xml version="1.0" encoding="UTF-8"?>
+<metadata>
+  <groupId>org.hibernate</groupId>
+  <artifactId>hibernate-core</artifactId>
+  <versioning>
+    <latest>9.0.0-SNAPSHOT</latest>
+    <versions>
+      <version>9.0.0-SNAPSHOT</version></versions>
+    <lastUpdated>20250429095824</lastUpdated>
+  </versioning>
+</metadata>
+----
+
+This will result in losing any previous snapshot versions from this file once deployed.
+It may cause issues with some plugins relying on `maven-metadata.xml` to determine available versions.
+
+The `MergeMavenMetadataAction` allows user to configure JReleaser to download and merge this xml to preserve the
+already existing versions, or to recreate the entire XML.
+
+To enable this action add the following to the JReleaser config:
+
+[source,yaml]
+----
+extensions:
+  hibernate-jreleaser-extension:
+    enabled: true
+    gav: org.hibernate.infra.jreleaser:hibernate-jreleaser-extension:<VERSION_OF_THE_EXTENSION>
+    providers:
+      - type: org.hibernate.infra.jreleaser.action.MergeMavenMetadataAction
+        properties:
+          active: SNAPSHOT
+          mode: MERGE
+          stagingRepository: target/staging-deploy/maven
+          snapshotUrl: https://oss.sonatype.org/content/repositories/snapshots/
+----
+
+Available configuration options (passed to `properties`) are:
+
+
+|===
+|Property name |Description
+
+|`active`
+| Determines when the action is enabled. Possible values are:  `ALWAYS`, `NEVER`, `RELEASE`, `PRERELEASE`, `RELEASE_PRERELEASE`, `SNAPSHOT`.
+
+|`mode`
+a| How the xml has to be modified. Available options are:
+
+- `MERGE`: downloads the remote `maven-metadata.xml` using the urls provided by `snapshotUrl`/`releaseUrl`
+and adds current version to the list if necessary, while updating the timestamp as well.
+- `RECREATE`: uses the `snapshotServiceUrl`/`releaseServiceUrl` to get currently available versions
+and creates the `maven-metadata.xml` from scratch. May be useful when the `maven-metadata.xml` got corrupted i.e. is missing some values.
+
+|`stagingRepository`
+| Specifies the path to where the locally staged artifacts are located.
+This directory is inspected for `maven-metadata.xml` files that have to be modified.
+
+|`snapshotUrl`
+| The base URL that is used to construct the URLs to `maven-metadata.xml` files,
+e.g. https://oss.sonatype.org/content/repositories/snapshots/
+
+This URL is required for `MERGE` mode when running the snapshot release.
+
+|`snapshotServiceUrl`
+| The base URL that is used to fetch the XML with all currently available versions,
+e.g. https://oss.sonatype.org/service/local/repositories/snapshots/content/
+
+This URL is required for `RECREATE` mode when running the snapshot release.
+
+|`releaseUrl`
+| The base URL that is used to construct the URLs to `maven-metadata.xml` files,
+e.g. https://oss.sonatype.org/content/repositories/releases/
+
+This URL is required for `MERGE` mode when running the snapshot release.
+
+|`releaseServiceUrl`
+| The base URL that is used to fetch the XML with all currently available versions,
+e.g. https://oss.sonatype.org/service/local/repositories/releases/content/
+
+This URL is required for `RECREATE` mode when running the "final" release.
+
+|===

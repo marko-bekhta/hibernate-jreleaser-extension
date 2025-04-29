@@ -14,6 +14,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
         <version.jreleaser-model-api>1.17.0</version.jreleaser-model-api>
+        <version.junit-jupiter>5.12.2</version.junit-jupiter>
     </properties>
 
     <dependencyManagement>
@@ -22,6 +23,13 @@
                 <groupId>org.jreleaser</groupId>
                 <artifactId>jreleaser-model-api</artifactId>
                 <version>${version.jreleaser-model-api}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.junit</groupId>
+                <artifactId>junit-bom</artifactId>
+                <version>${version.junit-jupiter}</version>
+                <type>pom</type>
+                <scope>import</scope>
             </dependency>
         </dependencies>
     </dependencyManagement>
@@ -32,6 +40,11 @@
             <artifactId>jreleaser-model-api</artifactId>
             <scope>provided</scope>
             <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 

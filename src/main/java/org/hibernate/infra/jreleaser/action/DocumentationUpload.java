@@ -37,14 +37,6 @@ public class DocumentationUpload extends AbstractAction {
 		);
 	}
 
-	private String getProperty(String property, Map<String, Object> properties) {
-		Object value = properties.get( property );
-		if ( value == null ) {
-			throw new IllegalArgumentException( "property " + property + " is null" );
-		}
-		return value.toString();
-	}
-
 	private String interpolate(String value, String version, String family) {
 		return value.replace( "{{version}}", version ).replace( "{{versionFamily}}", family );
 	}
